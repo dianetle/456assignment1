@@ -5,6 +5,6 @@
 Installation
 --> Git Clone
 
-```bash
+```
 git clone https://github.com/dianetle/456assignment1.git
 ```
