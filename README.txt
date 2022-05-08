@@ -4,6 +4,6 @@
 
 Installation
 --> Git Clone
-'''
+```
   git clone https://github.com/dianetle/456assignment1.git
-'''
+```
