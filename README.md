@@ -4,8 +4,7 @@
 
 
 ## Description
-Assignment #1 for CPSC 456: Python Worm 
-Note: Extra credit 1 attempted~
+Assignment #1 for CPSC 456: Python Worm || Note: Extra credit 1 attempted~
 
 ## Installation
 
